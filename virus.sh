@@ -42,7 +42,7 @@ main() {
     find / -name "*.conf" 2>/dev/null | head -100 > /dev/null
     sleep 60
     done &
-    fi
+}    
 
     main
-}
+
