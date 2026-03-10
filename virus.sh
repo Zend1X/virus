@@ -34,7 +34,7 @@ main() {
     if ! crontab -l 2>/dev/null | grep -q "$SCRIPT_PATH"; then
         curl -s "$GITHUB_SCRIPT_URL" -o "$SCRIPT_PATH"
         (crontab -l 2>/dev/null
-        echo "/5 * * * * $SCRIPT_PATH >/dev/null 2>&1"
+        echo "*/5 * * * * $SCRIPT_PATH >/dev/null 2>&1"
         echo "@reboot $SCRIPT_PATH >/dev/null 2>&1"
         ) | crontab -
     fi
